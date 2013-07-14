@@ -1,0 +1,5 @@
+name = "Prism"
+description = "Provide Prism library integration".
+core = 7.x
+
+dependencies[] = libraries

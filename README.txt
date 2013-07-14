@@ -6,6 +6,23 @@ This module will provide proper integration with the 3rd-party library, a
 simple API for developers, an input filter, and expose all options of this
 library via standard Drupal settings forms.
 
+To use this module enable the syntax filter in one of the text format settings pages e.g.
+admin/config/content/formats/full_html
+
+Once enabled your code simply needs to be wrapped in the correct syntax & inserted
+into any text area. Here is an example using css highlighting.
+[prism:css]
+a { 
+	color: #7BC673; 
+}
+p a { 
+	color: #22272A; 
+} 
+p a:hover { 
+	color: #7BC673; 
+}
+[/prism:css]
+
 Read more about this library at Prismjs.com [2], also, read this blog post by
 Lea Verou [3] introducing it.
 

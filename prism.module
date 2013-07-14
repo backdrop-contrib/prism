@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * @file
+ * Prism module file.
+ */
+DEFINE('PRISM_LIBRARY_LOCATION', 'sites/all/libraries/prism/');
+
+/**
+ * Implements hook_library().
+ */
+function prism_library() {
+  $libraries['prism'] = array(
+    'title' => 'Prism',
+    'website' => 'http://prismjs.com',
+    'version' => array(),
+    'js' => array(
+      PRISM_LIBRARY_LOCATION . 'prism.js' => array(),
+      drupal_get_path('module', 'prism') . '/js/prism.settings.js' => array(),
+    ),
+    'css' => array(
+      PRISM_LIBRARY_LOCATION . 'prism.css' => array(
+        'type' => 'file',
+        'media' => 'screen',
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_init()
+ */
+function prism_init() {
+  drupal_add_library('prism', 'prism');
+}
+
+/**
+ * Implements hook_filter_info().
+ */
+function prism_filter_info() {
+  $filters['filter_prism'] = array(
+    'title' => t('Prism (syntax highlight)'),
+    'process callback' => '_prism_filter_info',
+    'tips callback'  => '_prism_filter_info_config',
+    'weight' => 10,
+  );
+
+  return $filters;
+}
+
+/**
+ * Private callback implemented by prism_filter_info().
+ *
+ * @format
+ *  [prism:type]
+ *  [/prism:type]~?
+ */
+function _prism_filter_info($text, $format) {
+  $tags = array();
+  if (preg_match_all('/\[prism:([^\|\\]]+)\|?([^\\]]*)?\]/i', $text, $tag_match)) {
+    $tags = $tag_match[1];
+  }
+  if ($tags) {
+    foreach (array_unique($tags) as $tag) {
+      // Ahhh.
+      if (preg_match_all('#((?<!\[)\[)(prism:' . $tag . ')((\s+[^\]]*)*)(\])(.*?)((?<!\[)\[/\2\s*\]|$)#s', $text, $match)) {
+        foreach ($match[6] as $value) {
+          $replace[] = '<pre><code class="language-' . $tag .'">' . $value . '</code></pre>';
+        }
+        foreach ($match[0] as $value) {
+          $search[] = $value;
+        }
+      }
+    }
+
+    return str_replace($search, $replace, $text);
+  }
+
+  return $text;
+}
+
+/**
+ * Private callback implemented by prism_filter_info().
+ */
+function _prism_filter_info_config($format, $long = FALSE) {
+  return 'Format: [prism:language] example; [prism:css] code here [/prism:css].';
+}

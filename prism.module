@@ -23,6 +23,10 @@ function prism_library() {
         'type' => 'file',
         'media' => 'screen',
       ),
+      /*drupal_get_path('module', 'prism') . '/css/prism.wrapper.css' => array(
+        'type' => 'file',
+        'media' => 'screen',
+      ),*/
     ),
   );
 
@@ -67,7 +71,7 @@ function _prism_filter_info($text, $format) {
       // Ahhh.
       if (preg_match_all('#((?<!\[)\[)(prism:' . $tag . ')((\s+[^\]]*)*)(\])(.*?)((?<!\[)\[/\2\s*\]|$)#s', $text, $match)) {
         foreach ($match[6] as $value) {
-          $replace[] = '<pre><code class="language-' . $tag .'">' . $value . '</code></pre>';
+          $replace[] = '<div class="prism-wrapper" rel="' . $tag . '"><pre><code class="language-' . $tag . '">' . $value . '</code></pre></div>';
         }
         foreach ($match[0] as $value) {
           $search[] = $value;
@@ -86,4 +90,191 @@ function _prism_filter_info($text, $format) {
  */
 function _prism_filter_info_config($format, $long = FALSE) {
   return 'Format: [prism:language] example; [prism:css] code here [/prism:css].';
+}
+
+/**
+ * Implementation of hook_field_info().
+ */
+function prism_field_info() {
+  return array(
+    'prism' => array(
+      'label' => t('Prism textarea'),
+      'description' => t('This field stores long text in the database.'),
+      'default_widget' => 'prism_textarea',
+      'default_formatter' => 'prism_default',
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_widget_info().
+ */
+function prism_field_widget_info() {
+  return array(
+    'prism_textarea' => array(
+      'label' => t('Code highlighting'),
+      'field types' => array('prism'),
+      'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function prism_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $element += array(
+    '#type' => $instance['widget']['type'],
+    '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
+  );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function prism_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $element = array();
+
+  if ($display['type'] == 'prism_trim') {
+    $element['trim_size'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Trim Size'),
+      '#description' => t('The language trim size.'),
+      '#default_value' => $settings['trim_size'],
+    );
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function prism_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $elements = array();
+
+  if ($display['type'] == 'prism_trim') {
+    $elements = t('The current trim size is @trim', array(
+      '@trim'  => $settings['trim_size'],
+    ));
+  }
+
+  return $elements;
+}
+
+/**
+ * Implements hook_elements_info().
+*/
+function prism_element_info() {
+  $elements = array(
+    'prism_textarea' => array(
+      '#input' => TRUE,
+      '#process' => array('prism_textarea_process'),
+    ),
+  );
+
+  return $elements;
+}
+
+/**
+ * Process callback prism_textarea widget.
+ */
+function prism_textarea_process($element, $form_state, $complete_form) {
+  $defaults = $element['#value'];
+  $field = field_widget_instance($element, $form_state);
+
+  // @todo, Allow admin to set languages.
+  $languages = array(
+    'http' => 'HTTP',
+    'groovy' => 'Groovy',
+    'sql' => 'SQL',
+    'python' => 'Python',
+    'cplusplus' => 'C++',
+    'c' => 'C',
+    'bash' => 'Bash',
+    'sass' => 'SASS',
+    'coffeescript' => 'CoffeeScript',
+    'php' => 'PHP',
+    'java' => 'Java',
+    'javascript' => 'JavaScript',
+    'css' => 'CSS',
+    'markup' => 'Markup',
+  );
+
+  $element['codearea'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Code area'),
+    '#default_value' => isset($defaults['codearea']) ? $defaults['codearea'] : '',
+    '#required' => $element['#required'],
+    '#rows' => isset($field['widget']['rows']) ? $field['widget']['rows'] : 5,
+    '#description' => filter_xss($field['description']),
+  );
+  $element['languages'] = array(
+    '#type' => 'select',
+    '#title' => t('Language'),
+    '#default_value' => isset($defaults['languages']) ? $defaults['languages'] : '',
+    '#options' => $languages,
+    '#description' => t('Select the language to highlight.'),
+  );
+
+  return $element;
+}
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function prism_field_formatter_info() {
+  return array(
+    'prism_default' => array(
+      'label' => t('Default'),
+      'field types' => array('prism'),
+    ),
+    /*'prism_trim' => array(
+      'label' => t('Trim'),
+      'field types' => array('prism'),
+      'settings'  => array(
+        'trim_size' => 600,
+      ),
+    ),*/
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function prism_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  switch ($display['type']) {
+    /*case 'prism_trim':
+      foreach ($items as $delta => $item) {
+        $elements[$delta] = array(
+          '#markup' => '<div id="prism-' . $delta . '" class="prism-wrapper" rel="' . $item['languages'] . '"><pre><code class="language-' . $item['languages'] . '">' . truncate_utf8($item['codearea'], 600, TRUE, TRUE) . '</code></pre></div>',
+        );
+      }
+    break;*/
+    case 'prism_default':
+      foreach ($items as $delta => $item) {
+        $elements[$delta] = array(
+          '#markup' => '<div id="prism-' . $delta . '" class="prism-wrapper" rel="' . $item['languages'] . '"><pre><code class="language-' . $item['languages'] . '">' . $item['codearea'] . '</code></pre></div>',
+        );
+      }
+    break;
+  }
+
+  return $elements;
+}
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function prism_field_is_empty($item, $field) {
+  return empty($item['codearea']);
 }

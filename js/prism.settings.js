@@ -6,7 +6,6 @@
 (function ($) {
   Drupal.behaviors.prism = {
     attach: function(context, settings) {
-      var current = localStorage.getItem('theme');
       // Check if an ajax call has been made.
       $(document).ajaxComplete(function() {
         // Make sure we highlight any newly added content.
@@ -15,12 +14,4 @@
       });
     }
   };
-
-  /**
-   * Set the Prism theme.
-   */
-  function setTheme(id) {
-    localStorage.setItem('theme', id);
-  }
-
 })(jQuery);

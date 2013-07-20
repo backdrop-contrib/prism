@@ -9,6 +9,10 @@ library via standard Drupal settings forms.
 To use this module enable the syntax filter in one of the text format settings pages e.g.
 admin/config/content/formats/full_html
 
+The library path must resemble something like;
+sites/all/libraries/prism/prism.js
+sites/all/libraries/prism/prism.css
+
 Once enabled your code simply needs to be wrapped in the correct syntax & inserted
 into any text area. Here is an example using css highlighting.
 [prism:css]

@@ -93,7 +93,7 @@ function _prism_filter_info_config($format, $long = FALSE) {
 }
 
 /**
- * Implementation of hook_field_info().
+ * Implementats hook_field_info().
  */
 function prism_field_info() {
   return array(
@@ -107,7 +107,7 @@ function prism_field_info() {
 }
 
 /**
- * Implementation of hook_widget_info().
+ * Implements hook_widget_info().
  */
 function prism_field_widget_info() {
   return array(
@@ -227,7 +227,7 @@ function prism_textarea_process($element, $form_state, $complete_form) {
 }
 
 /**
- * Implementation of hook_field_formatter_info().
+ * Implements hook_field_formatter_info().
  */
 function prism_field_formatter_info() {
   return array(

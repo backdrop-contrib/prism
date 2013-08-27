@@ -4,33 +4,48 @@
  * @file
  * Prism module file.
  */
-DEFINE('PRISM_LIBRARY_LOCATION', 'sites/all/libraries/prism/');
 
 /**
  * Implements hook_library().
  */
 function prism_library() {
+  $location = prism_return_library_location();
+
   $libraries['prism'] = array(
     'title' => 'Prism',
     'website' => 'http://prismjs.com',
     'version' => array(),
     'js' => array(
-      PRISM_LIBRARY_LOCATION . 'prism.js' => array(),
+      $location . 'prism.js' => array(),
       drupal_get_path('module', 'prism') . '/js/prism.settings.js' => array(),
     ),
     'css' => array(
-      PRISM_LIBRARY_LOCATION . 'prism.css' => array(
+      $location . 'prism.css' => array(
         'type' => 'file',
         'media' => 'screen',
       ),
-      /*drupal_get_path('module', 'prism') . '/css/prism.wrapper.css' => array(
-        'type' => 'file',
-        'media' => 'screen',
-      ),*/
     ),
   );
 
   return $libraries;
+}
+
+/**
+ * Return appropriate library location.
+ */
+function prism_return_library_location() {
+  $file_base = '/libraries/prism/prism.js';
+
+  // Check for a multisite installation.
+  if (file_exists(conf_path() . $file_base)) {
+    $location = conf_path() . '/libraries/prism/';
+  }
+  else {
+    // Default.
+    $location = 'sites/all/libraries/prism/';
+  }
+
+  return $location;
 }
 
 /**
@@ -71,7 +86,7 @@ function _prism_filter_info($text, $format) {
       // Ahhh.
       if (preg_match_all('#((?<!\[)\[)(prism:' . $tag . ')((\s+[^\]]*)*)(\])(.*?)((?<!\[)\[/\2\s*\]|$)#s', $text, $match)) {
         foreach ($match[6] as $value) {
-          $replace[] = '<div class="prism-wrapper" rel="' . $tag . '"><pre><code class="language-' . $tag . '">' . $value . '</code></pre></div>';
+          $replace[] = '<div class="prism-wrapper" rel="' . $tag . '"><pre><code class="language-' . $tag . '">' . htmlspecialchars($value) . '</code></pre></div>';
         }
         foreach ($match[0] as $value) {
           $search[] = $value;
@@ -263,7 +278,7 @@ function prism_field_formatter_view($entity_type, $entity, $field, $instance, $l
     case 'prism_default':
       foreach ($items as $delta => $item) {
         $elements[$delta] = array(
-          '#markup' => '<div id="prism-' . $delta . '" class="prism-wrapper" rel="' . $item['languages'] . '"><pre><code class="language-' . $item['languages'] . '">' . $item['codearea'] . '</code></pre></div>',
+          '#markup' => '<div id="prism-' . $delta . '" class="prism-wrapper" rel="' . $item['languages'] . '"><pre><code class="language-' . $item['languages'] . '">' . htmlspecialchars($item['codearea']) . '</code></pre></div>',
         );
       }
     break;

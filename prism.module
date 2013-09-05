@@ -293,3 +293,18 @@ function prism_field_formatter_view($entity_type, $entity, $field, $instance, $l
 function prism_field_is_empty($item, $field) {
   return empty($item['codearea']);
 }
+
+/**
+ * Implements hook_wysiwyg_editor_settings_alter().
+ *
+ * @description
+ *  Prevents CKEditor from encoding html entities, such as ampersands.
+ *  @https://drupal.org/node/803562#comment-5630546
+*/
+function prism_wysiwyg_editor_settings_alter(&$settings, $context) {
+  if ($context['profile']->editor == 'ckeditor') {
+    $settings['entities'] = FALSE;
+    $settings['basicEntities'] = FALSE;
+    $settings['disableReadonlyStyling'] = TRUE;
+  }
+}

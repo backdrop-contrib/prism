@@ -7,9 +7,12 @@
 
 /**
  * Implements hook_library().
+ *   
  */
-function prism_library() {
+function prism_library_info() { 
   $location = prism_return_library_location();
+
+  $csstweak = backdrop_get_path('module', 'prism') . '/css/';
 
   $libraries['prism'] = array(
     'title' => 'Prism',
@@ -17,10 +20,14 @@ function prism_library() {
     'version' => array(),
     'js' => array(
       $location . 'prism.js' => array(),
-      drupal_get_path('module', 'prism') . '/js/prism.settings.js' => array(),
+      backdrop_get_path('module', 'prism') . '/js/prism.settings.js' => array(),
     ),
     'css' => array(
       $location . 'prism.css' => array(
+        'type' => 'file',
+        'media' => 'screen',
+      ),
+      $csstweak . 'csstweak.css' => array(
         'type' => 'file',
         'media' => 'screen',
       ),
@@ -52,7 +59,7 @@ function prism_return_library_location() {
  * Implements hook_init()
  */
 function prism_init() {
-  drupal_add_library('prism', 'prism');
+  backdrop_add_library('prism', 'prism');
 }
 
 /**

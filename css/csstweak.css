@@ -1,0 +1,12 @@
+/**
+ * @file
+ * CSS file
+ *
+ * Tweak padding and border-left from base.css of basis core theme
+ * Put here your code for tweak your theme
+ */
+
+pre > code {
+ padding: 0 !important;
+ border-left: 0 !important;
+}

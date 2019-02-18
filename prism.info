@@ -1,6 +1,5 @@
 name = "Prism"
 description = Provide Prism library integration.
 backdrop = 1.x
-
+type = module
 dependencies[] = libraries
-

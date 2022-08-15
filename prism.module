@@ -271,7 +271,7 @@ function prism_field_formatter_info() {
  * Implements hook_field_formatter_view().
  */
 function prism_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
-  $element = array();
+  $elements = array();
   $settings = $display['settings'];
 
   switch ($display['type']) {
